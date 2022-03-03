@@ -1,0 +1,3 @@
+Acesta este doar un text. Este foarte random, este facut... pentru a verifica, functionalitatea     programului meu.
+De asemenea: avem 3 tipuri de operatii; Eliminare semne punctuatie, filtrare cuvinte cu un anumit numar de litere, filtrare spatii   multiple
+3 randuri...
