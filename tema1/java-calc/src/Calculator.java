@@ -3,6 +3,7 @@ import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.util.Stack;
 import javax.swing.*;
 
 public class Calculator extends JFrame {
@@ -25,10 +26,12 @@ public class Calculator extends JFrame {
             new JButton(" * "),
             new JButton(" / "),
             new JButton(" = "),
-            new JButton(" C ")
+            new JButton(" C "),
+            new JButton(" ( "),
+            new JButton(" ) ")
     };
 
-    String oper_values[] = {"+", "-", "*", "/", "=", ""};
+    String oper_values[] = {"+", "-", "*", "/", "=", "", "(", ")"};
 
     String value;
     char operator;
@@ -37,7 +40,7 @@ public class Calculator extends JFrame {
 
     public static void main(String[] args) {
         Calculator calculator = new Calculator();
-        calculator.setSize(230, 200);
+        calculator.setSize(300, 300);
         calculator.setTitle(" Java-Calc, PP Lab1 ");
         calculator.setResizable(false);
         calculator.setVisible(true);
@@ -52,7 +55,7 @@ public class Calculator extends JFrame {
         for (int i=0;i<10;i++)
             buttonpanel.add(digits[i]);
 
-        for (int i=0;i<6;i++)
+        for (int i=0;i<8;i++)
             buttonpanel.add(operators[i]);
 
         add(buttonpanel, BorderLayout.CENTER);
@@ -72,7 +75,7 @@ public class Calculator extends JFrame {
             });
         }
 
-        for (int i=0;i<6;i++){
+        for (int i=0;i<8;i++){
             int finalI = i;
             operators[i].addActionListener(new ActionListener() {
                 @Override
@@ -81,16 +84,19 @@ public class Calculator extends JFrame {
                         area.setText("");
                     else
                     if (finalI == 4) {
-                        String lhs;
-                        String rhs;
+
                         try {
-                            lhs = area.getText().substring(0, area.getText().indexOf(operator + ""));
-                            rhs = area.getText().substring(area.getText().indexOf(operator + "") + 1, area.getText().length());
+
+                            double result = calculate_result(area.getText());
                             switch (operator) {
-                                case '+': area.append(" = " + ((Double.parseDouble(lhs) + Double.parseDouble(rhs)))); break;
-                                case '-': area.append(" = " + ((Double.parseDouble(lhs) - Double.parseDouble(rhs)))); break;
-                                case '/': area.append(" = " + ((Double.parseDouble(lhs) / Double.parseDouble(rhs)))); break;
-                                case '*': area.append(" = " + ((Double.parseDouble(lhs) * Double.parseDouble(rhs)))); break;
+                                case '+':
+                                    area.append(" = " + result); break;
+                                case '-':
+                                    area.append(" = " + result); break;
+                                case '/':
+                                    area.append(" = " + result); break;
+                                case '*':
+                                    area.append(" = " + result); break;
                                 default: area.setText(" "); break;
                             }
                         } catch (Exception e) {
@@ -105,4 +111,124 @@ public class Calculator extends JFrame {
             });
         }
     }
+
+    static int Prec(char ch)
+    {
+        switch (ch)
+        {
+            case '+':
+            case '-':
+                return 1;
+
+            case '*':
+            case '/':
+                return 2;
+
+            case '^':
+                return 3;
+        }
+        return -1;
+    }
+
+    static String infixToPostfix(String exp)
+    {
+
+        String result = new String("");
+
+
+        Stack<Character> stack = new Stack<>();
+
+        for (int i = 0; i<exp.length(); ++i)
+        {
+            char c = exp.charAt(i);
+            if (Character.isLetterOrDigit(c))
+                result += c;
+
+
+            else if (c == '(')
+                stack.push(c);
+
+            else if (c == ')')
+            {
+                while (!stack.isEmpty() &&
+                        stack.peek() != '(')
+                    result += stack.pop();
+
+                stack.pop();
+            }
+            else
+            {
+                while (!stack.isEmpty() && Prec(c)
+                        <= Prec(stack.peek())){
+
+                    result += stack.pop();
+                }
+                stack.push(c);
+            }
+
+        }
+
+
+        while (!stack.isEmpty()){
+            if(stack.peek() == '(')
+                return "Invalid Expression";
+            result += stack.pop();
+        }
+        return result;
+    }
+
+    public static double calc(String[] strArr) {
+        Stack<Double> operands = new Stack<Double>();
+
+        for(String str : strArr) {
+            if (str.trim().equals("")) {
+                continue;
+            }
+
+            switch (str) {
+                case "+":
+                case "-":
+                case "*":
+                case "/":
+                    double right = operands.pop();
+                    double left = operands.pop();
+                    double value = 0;
+                    switch(str) {
+                        case "+":
+                            value = left + right;
+                            break;
+                        case "-":
+                            value = left - right;
+                            break;
+                        case "*":
+                            value = left * right;
+                            break;
+                        case "/":
+                            value = left / right;
+                            break;
+                        default:
+                            break;
+                    }
+                    operands.push(value);
+                    break;
+                default:
+                    operands.push(Double.parseDouble(str));
+                    break;
+            }
+        }
+        return operands.pop();
+    }
+
+    public double calculate_result(String a){
+        String b = infixToPostfix(a);
+        int len = b.length();
+        String resultArray[] = new String[len];
+        for(int i = 0; i<len; i++){
+            resultArray[i] = Character.toString(b.charAt(i));
+        }
+
+        double result = calc(resultArray);
+        return result;
+    }
+
 }
