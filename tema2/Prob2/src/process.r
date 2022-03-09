@@ -1,0 +1,1 @@
+pbinom(x, size=Nraruncari, prob=0.5)
